@@ -1,0 +1,36 @@
+# Build outputs — ignore everything under build/ EXCEPT the tracked
+# picorv32_residual directory (the dsec residual miter is a useful
+# verification artifact we want versioned).
+build/*
+!build/equiv/
+build/equiv/*
+!build/equiv/picorv32_residual/
+
+derived/
+reference/sky130/
+reference/skywater-pdk-parent/
+reference/picorv32/
+reference/aes/
+reference/asap7/
+*.log
+*.history
+
+# Memory-init and bitstream artifacts
+*.mem
+*.bit
+
+# Experiment backups
+*.bak
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+# abc dsec scratch file (when run from repo root); the tracked
+# residual copy under build/equiv/picorv32_residual/ is exempted.
+/sm01.aig
