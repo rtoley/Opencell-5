@@ -53,7 +53,14 @@ export DONT_USE_CELLS += \
     sky130_fd_sc_hd__lpflow_lsbuf_lh_isowell_4 \
     sky130_fd_sc_hd__lpflow_lsbuf_lh_isowell_tap_1 \
     sky130_fd_sc_hd__lpflow_lsbuf_lh_isowell_tap_2 \
-    sky130_fd_sc_hd__lpflow_lsbuf_lh_isowell_tap_4
+    sky130_fd_sc_hd__lpflow_lsbuf_lh_isowell_tap_4 \
+    sky130_fd_sc_hd__xor3_1 sky130_fd_sc_hd__xor3_2 sky130_fd_sc_hd__xor3_4 \
+    sky130_fd_sc_hd__xnor3_1 sky130_fd_sc_hd__xnor3_2 sky130_fd_sc_hd__xnor3_4
+# The 3-input XOR/XNOR family above is disabled to match asap7's cell menu
+# (asap7 has NO 3-input XOR). sky130's xnor3 is ~2.5x a xnor2 in delay, but abc
+# picks it to cut logic depth, yielding a SLOWER critical path on XOR-heavy
+# logic (the d-sweep) -> the ~-20% fmax gap vs asap7. Equalizing the menu lets
+# abc map to fast xnor2 chains like asap7 does. See diagnosis 2026-06-13.
 #
 # Define fill cells
 export FILL_CELLS ?= sky130_fd_sc_hd__fill_1 sky130_fd_sc_hd__fill_2 sky130_fd_sc_hd__fill_4 sky130_fd_sc_hd__fill_8
