@@ -61,10 +61,22 @@ def parse_metrics(platform: str, design: str) -> dict:
 
     syn = _find(build, "synth_stat.txt")
     if syn:
-        a = re.search(r"Chip area for (?:module|top module).*?:\s*([\d.]+)",
-                      syn.read_text())
-        if a:
-            m["synth_area_um2"] = float(a.group(1))
+        # yosys synth_stat varies by design: hierarchical designs emit a
+        # "Chip area for top module" line (use it); flat designs emit only
+        # "Chip area for module" (the last such line is the top). Match the
+        # value AFTER the name's closing quote, since escaped Verilog names can
+        # contain ':' (e.g. '\ALU..._CO[14:0]...') — a naive '.*?:' would stop
+        # inside the name and capture a stray digit (reported area 0.0 for gcd).
+        text = syn.read_text()
+        top = re.search(r"Chip area for top module\s+'[^']*'\s*:\s*([\d.]+)",
+                        text)
+        if top:
+            m["synth_area_um2"] = float(top.group(1))
+        else:
+            mods = re.findall(
+                r"Chip area for module\s+'[^']*'\s*:\s*([\d.]+)", text)
+            if mods:
+                m["synth_area_um2"] = float(mods[-1])
 
     # buffering proof — repair_design during global placement
     gp = _find(build, "3_3_place_gp.log")
