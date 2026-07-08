@@ -34,7 +34,7 @@ add, so it never hides the image's built-ins:
 - output dirs are bind-mounted back to the host build dir; stale root-owned
   dirs from prior runs are re-chowned to the host user first.
 
-## Two operating rules (both load-bearing)
+## Three operating rules (all load-bearing)
 
 1. **`LEC_CHECK=0`** (set by default). The image bundles `kepler-formal`, whose
    `libnaja_*.so` use AVX-512; on CPUs without it the LEC step SIGILLs at CTS.
@@ -44,6 +44,16 @@ add, so it never hides the image's built-ins:
    `cts.tcl … child killed: illegal instruction` threading race at
    `repair_timing` — *even with* `LEC_CHECK=0`. It is not a real block; solo
    runs complete. One design at a time.
+3. **Cap synthesis memory — don't co-run heavy jobs.** yosys synth of the large
+   designs peaks in the tens of GiB. On a memory-constrained host, a synth that
+   grows near the available RAM *while another P&R container is also running*
+   can trigger a global OOM that takes down the whole build environment — not
+   just the job. Run synth alone, and/or wrap the heavy step in a memory cgroup
+   so OOM kills only that process cleanly instead of destabilizing the host:
+   ```bash
+   systemd-run --user --scope -p MemoryMax=20G -p MemorySwapMax=2G \
+     flow/run_orfs.sh <platform> <design>
+   ```
 
 ## Env knobs
 

@@ -1,0 +1,9 @@
+platform,design,fmax_mhz,period_ps
+opencell7,d8,7246,140
+asap7,d8,7687,130
+opencell7,d16,6314,160
+asap7,d16,6478,154
+opencell7,d32,5014,200
+asap7,d32,5512,181
+opencell7,d48,4813,210
+asap7,d48,4612,217
