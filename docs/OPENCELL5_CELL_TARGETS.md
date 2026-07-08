@@ -29,36 +29,57 @@ flop-heavy correlation gap below.
 
 ## 2. Task-C correlation matrix (post-CTS, router-free statistical endpoint)
 
-opencell-7 vs asap7 via `flow/statppa.py`, open designs only:
+> **CORRECTED 2026-07-08.** The old −18 to −20% flop-chain gap (the "was" column)
+> was measured 2026-06-13, *before* the xnor3 `dont_use` fix (commit 86c6210,
+> 2026-06-14). That fix — abc was mis-selecting sky130's slow xnor3 to reduce
+> logic depth, lengthening the critical path — closed the gap. The current
+> numbers below are a fresh full-set run on HEAD.
 
-| design | character | oc7 fmax | asap7 fmax | fmax gap |
-|---|---|---|---|---|
-| aes | logic | 2651 | 2632 | **+0.7%** |
-| picorv32 | logic | 1527 | 1562 | **−2.2%** |
-| d8 | flop-chain | 7221 | 7671 | −5.9% |
-| gcd | tiny (220 cells) | 2216 | 2629 | −15.7% |
-| d48 | flop-chain | 3762 | 4634 | **−18.8%** |
-| d32 | flop-chain | 4424 | 5500 | **−19.6%** |
-| d16 | flop-chain | 5117 | 6408 | **−20.1%** |
+opencell-7 vs asap7 via `flow/statppa.py`, open designs only. **Fresh HEAD run
+(2026-07-08), both platforms:**
 
-**Pattern:** logic-dominated designs land within ±3%; flop-dominated designs
-(the d-sweep is literally flop chains) sit at a consistent **−18 to −20%**. Two
-independent measurements, one root cause: the oversized DFF (§1) inflates
-flop-heavy die area → longer wires → ~−19% fmax (§2). gcd is a noisy outlier
-(220 cells; tiny-design variance + a config-target mismatch).
+| design | character | oc7 fmax | asap7 fmax | fmax gap | (was, pre-fix) |
+|---|---|---|---|---|---|
+| aes | logic | 2672 | 2632 | **+1.5%** | +0.7% |
+| picorv32 | logic | 1527 | 1562 | **−2.2%** | −2.2% |
+| d8 | flop-chain | 7406 | 7690 | **−3.7%** | −5.9% |
+| d16 | flop-chain | 6314 | 6478 | **−2.5%** | −20.1% |
+| d32 | flop-chain | 5014 | 5512 | **−9.0%** | −19.6% |
+| d48 | flop-chain | 4813 | 4612 | **+4.3%** | −18.8% |
+| gcd | tiny (220 cells) | 2931 | 2629 | +11.5% | −15.7% |
+
+**Pattern (corrected):** logic AND flop-chain designs now land within ~±9% (d48
+even ahead; gcd a noisy +11.5% tiny-design outlier). The previously-claimed
+"oversized DFF → −19% flop-heavy fmax" causal chain does **not** survive the
+corrected data — opencell-7 statistically matches asap7 on fmax across the board.
+The old gap's root cause was the xnor3 mis-selection, not the DFF.
+
+**Consequence for opencell-5:** the *fmax*-recovery motivation is moot. The
+remaining, still-valid driver is the §1 **area/density** gap (oversized DFF,
+structural INV=NAND2=NOR2) — an area-efficiency goal, not a speed one.
+
+Buffering note: flop chains insert 0 `repair_design` buffers on *both* platforms
+(short flop-to-flop paths, no high-fanout data nets), so the comparison is
+apples-to-apples; statppa's generic "NO BUFFERS — unreliable" warning is not an
+opencell-7-specific under-buffering. Logic designs are properly buffered (oc7:
+aes 272, picorv32 358 buffers).
 
 ## 3. opencell-5 work order
 
 0. **Reproduce the opencell-7 baseline FIRST (before changing any cell).** In
    the fresh repo, run the opencell-7 flow as-is — `flow/statppa.py` across the
    open designs — to (a) confirm the clean checkout runs end-to-end and (b)
-   reproduce the §2 baseline matrix (logic within ±3%, flop-dominated −18 to
-   −20%). This is the regression baseline every opencell-5 retune is measured
-   against. No cell changes until this baseline is captured and matches §2.
-1. **Sequential family first.** Build the DFF (and the rest of the SEQ family)
-   to asap7's per-family area + characterize timing against a real 7nm-class
-   reference. This single family closes most of the flop-heavy gap — moving the
-   −19% cohort toward the logic cohort's ±3%.
+   reproduce the §2 baseline matrix (logic AND flop-chains within ~±9% — the
+   corrected, post-xnor3-fix numbers, NOT the −18/−20% "was" column). This is the
+   regression baseline every opencell-5 retune is measured against. No cell
+   changes until this baseline is captured and matches §2.
+1. **Sequential family first (area, not speed).** Build the DFF (and the rest of
+   the SEQ family) to asap7's per-family area + characterize timing against a real
+   7nm-class reference. Motivation is now **die-area/density** (§1: DFF 1.23×
+   oversized), NOT fmax recovery — the flop-chain *timing* gap is already closed
+   (§2, post-xnor3-fix). A right-sized DFF shrinks flop-heavy die area; whether
+   that buys measurable fmax on top of today's parity is an open question to
+   re-measure, not an assumption.
 2. **Combinational cells** to the per-family targets in §1 (INV especially:
    structurally smaller than NAND2, which scaled-sky130 cannot express).
 3. **Re-validate** with `flow/statppa.py` across the design set; bar is ±10%

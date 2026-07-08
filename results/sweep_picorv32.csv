@@ -1,5 +1,0 @@
-platform,design,run,fmax_mhz,period_ps,converged,iters_used,wall_s,status,error
-opencell7,picorv32,1,2002,500.0,True,2,369.7,OK,
-opencell7,picorv32,2,2002,500.0,True,2,372.5,OK,
-asap7,picorv32,1,2349,425.6,True,2,385.0,OK,
-asap7,picorv32,2,2349,425.6,True,2,370.3,OK,

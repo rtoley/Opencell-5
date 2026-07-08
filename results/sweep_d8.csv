@@ -1,3 +1,0 @@
-platform,design,run,fmax_mhz,period_ps,converged,iters_used,wall_s,status,error
-opencell7,d8,1,7246,140.0,True,2,87.9,OK,
-asap7,d8,1,7687,130.1,True,2,90.8,OK,
