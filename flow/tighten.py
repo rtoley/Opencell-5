@@ -40,8 +40,10 @@ def find_sdc(platform: str, design: str) -> Path:
 
 
 def sdc_unit(platform: str) -> float:
-    """SDC create_clock period is in the lib time unit: opencell7=ns, asap7=ps."""
-    return 1.0 if platform == "opencell7" else 1000.0
+    """SDC create_clock period is in the lib time unit: asap7=ps, the sky130-
+    derived opencell platforms (opencell7, opencell5, …) are all ns. Don't
+    hardcode a single opencell name — any non-asap7 platform is ns."""
+    return 1000.0 if platform == "asap7" else 1.0
 
 
 def set_period(sdc: Path, period_ns: float, platform: str) -> None:
@@ -80,8 +82,10 @@ def read_achieved_ns(platform: str, design: str) -> tuple[float, float] | None:
     m = re.search(r"period_min\s*=\s*([\d.]+)\s+fmax\s*=\s*([\d.]+)", t)
     if not m:
         return None
-    # period_min is printed in the lib time unit (opencell7=ns, asap7=ps) -> ns
-    period_ns = float(m.group(1)) / (1.0 if platform == "opencell7" else 1000.0)
+    # period_min is printed in the lib time unit -> normalize to ns. asap7's lib
+    # is in ps (÷1000); the sky130-derived opencell platforms (opencell7,
+    # opencell5, …) are all in ns. Don't hardcode a single platform name.
+    period_ns = float(m.group(1)) / (1000.0 if platform == "asap7" else 1.0)
     fmax_mhz = float(m.group(2))
     return period_ns, fmax_mhz
 

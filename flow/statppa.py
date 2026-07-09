@@ -1,28 +1,33 @@
 #!/usr/bin/env python3
-"""statppa.py — autonomous statistical-PPA correlation: asap7 vs opencell-7.
+"""statppa.py — autonomous statistical-PPA correlation between two platforms.
 
 Runs a design through BOTH platforms to a router-free statistical endpoint
 (synth -> floorplan -> place -> CTS, i.e. ORFS target `cts`) and correlates
 the PPA. We deliberately STOP before detailed routing: DRT/DRC are sign-off
-tools whose job is manufacturability, which is not opencell-7's purpose. The
-post-CTS stage carries a real clock tree and RC-estimated timing, and BOTH
-platforms reach it cleanly on every design — so it's the deepest honest,
-apples-to-apples comparison point for analyzing real designs.
+tools whose job is manufacturability, which is not the opencell platforms'
+purpose. The post-CTS stage carries a real clock tree and RC-estimated timing,
+and both platforms reach it cleanly — the deepest honest, apples-to-apples
+comparison point for analyzing real designs.
 
 It also ASSERTS that high-fanout buffering actually happened (repair_design
 inserted buffers), so we can never again report an unbuffered, meaningless
 frequency. See memory: statistical-flow-not-signoff, no-handwave-buffer-fanout.
 
+The platform pair is configurable (`--platforms BASELINE DUT`), so any deck is a
+first-class citizen: asap7-vs-opencell7 (default), opencell7-vs-opencell5 (node
+step), etc. The signed gap is (DUT - BASELINE)/BASELINE.
+
 Usage:
-  flow/statppa.py <design> [<design> ...]           # run both platforms + report
-  flow/statppa.py --no-run <design>                 # parse existing builds only
+  flow/statppa.py <design> [<design> ...]                       # default asap7 vs opencell7
+  flow/statppa.py --platforms opencell7 opencell5 <design> ...  # 7nm vs 5nm node step
+  flow/statppa.py --no-run <design>                             # parse existing builds only
 """
 from __future__ import annotations
 import argparse, json, re, subprocess, sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-PLATFORMS = ["asap7", "opencell7"]
+DEFAULT_PLATFORMS = ["asap7", "opencell7"]   # [baseline, DUT]
 
 
 def run_orfs(platform: str, design: str) -> int:
@@ -89,34 +94,35 @@ def parse_metrics(platform: str, design: str) -> dict:
     return m
 
 
-def correlate(design: str, a: dict, o: dict) -> str:
-    """Build a markdown correlation block (opencell-7 vs asap7)."""
-    def gap(ov, av):
-        if ov is None or av is None or av == 0:
+def correlate(design: str, base: dict, dut: dict,
+              base_name: str, dut_name: str) -> str:
+    """Build a markdown correlation block: DUT vs BASELINE, gap=(dut-base)/base."""
+    def gap(dv, bv):
+        if dv is None or bv is None or bv == 0:
             return None
-        return (ov - av) / av * 100.0
+        return (dv - bv) / bv * 100.0
 
     rows = [("synth area (µm²)", "synth_area_um2", "{:.1f}"),
             ("fmax (MHz)",       "fmax_mhz",       "{:.0f}"),
             ("worst slack",      "worst_slack",    "{:.3f}"),
             ("total power",      "total_power",    "{:.2e}")]
-    lines = [f"### {design} — opencell-7 vs asap7 (post-CTS, router-free)",
+    lines = [f"### {design} — {dut_name} vs {base_name} (post-CTS, router-free)",
              "",
-             "| metric | opencell-7 | asap7 | signed gap |",
+             f"| metric | {dut_name} | {base_name} | signed gap |",
              "|---|---|---|---|"]
     for label, key, fmt in rows:
-        ov, av = o.get(key), a.get(key)
-        g = gap(ov, av)
-        ovs = fmt.format(ov) if ov is not None else "—"
-        avs = fmt.format(av) if av is not None else "—"
+        dv, bv = dut.get(key), base.get(key)
+        g = gap(dv, bv)
+        dvs = fmt.format(dv) if dv is not None else "—"
+        bvs = fmt.format(bv) if bv is not None else "—"
         gs = f"{g:+.1f}%" if g is not None else "—"
-        lines.append(f"| {label} | {ovs} | {avs} | {gs} |")
-    # buffering assertion
-    bo = o.get("buffers_inserted", 0)
-    fo = o.get("fanout_violations_found", 0)
+        lines.append(f"| {label} | {dvs} | {bvs} | {gs} |")
+    # buffering assertion (on the DUT)
+    bo = dut.get("buffers_inserted", 0)
+    fo = dut.get("fanout_violations_found", 0)
     status = "✅ buffered" if bo > 0 else "⚠️  NO BUFFERS — fmax is unreliable"
     lines += ["",
-              f"**opencell-7 buffering:** {fo} fanout violations found, "
+              f"**{dut_name} buffering:** {fo} fanout violations found, "
               f"{bo} buffers inserted — {status}"]
     return "\n".join(lines)
 
@@ -124,28 +130,33 @@ def correlate(design: str, a: dict, o: dict) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("designs", nargs="+")
+    ap.add_argument("--platforms", nargs=2, metavar=("BASELINE", "DUT"),
+                    default=DEFAULT_PLATFORMS,
+                    help="two platforms to correlate; gap=(DUT-BASELINE)/BASELINE "
+                         "(default: asap7 opencell7)")
     ap.add_argument("--no-run", action="store_true",
                     help="parse existing build dirs only, don't launch ORFS")
     args = ap.parse_args()
+    base_name, dut_name = args.platforms
 
     out_dir = REPO / "build" / "statppa"
     out_dir.mkdir(parents=True, exist_ok=True)
-    report = ["# Statistical PPA correlation — asap7 vs opencell-7",
+    report = [f"# Statistical PPA correlation — {dut_name} vs {base_name}",
               "_Endpoint: post-CTS, router-free (no DRT/DRC sign-off). "
               "Both platforms reach this cleanly._", ""]
     allj = {}
 
     for design in args.designs:
         if not args.no_run:
-            for p in PLATFORMS:
+            for p in args.platforms:
                 rc = run_orfs(p, design)
                 if rc != 0:
                     print(f"   note: {p}/{design} returned {rc} "
                           f"(CTS endpoint may still have completed)", flush=True)
-        a = parse_metrics("asap7", design)
-        o = parse_metrics("opencell7", design)
-        allj[design] = {"asap7": a, "opencell7": o}
-        report.append(correlate(design, a, o))
+        base = parse_metrics(base_name, design)
+        dut = parse_metrics(dut_name, design)
+        allj[design] = {base_name: base, dut_name: dut}
+        report.append(correlate(design, base, dut, base_name, dut_name))
         report.append("")
 
     (out_dir / "report.md").write_text("\n".join(report))
