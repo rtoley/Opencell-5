@@ -78,18 +78,22 @@ You'd expect opencell-5 (5nm) to land smaller than asap7 (7nm).
 ---
 ---
 
-## Appendix — regenerate opencell-5 from source (MAINTAINERS ONLY)
+## Appendix — provenance (how the deck was derived)
 
-You do **not** need any of this to use opencell-5; the deck is committed. This is
-only how the deck is *built* — the statistical scaling of the silicon-validated
-sky130 PDK that gives opencell-5 its honest provenance.
+You do **not** need any of this to use opencell-5; the committed deck is the
+deliverable. This is only *how it was made* — the statistical scaling of the
+silicon-validated sky130 PDK (Apache-2.0) that gives opencell-5 its provenance.
 
-```bash
-make fetch                                 # fetch the sky130 source .lib (build input)
-bash scaling/build_opencell5.sh gcd d16    # rebuild platforms/opencell5 + wire designs
-```
-
-`build_opencell5.sh` scales sky130 one node past the 7nm sibling (`opencell7`),
-grid-locks the LEF (`scaling/gridlock_lef.py`), and scales the PDN/track/RC tcl.
-The scale factors live in `scaling/scale_factors_5nm.json`. To study the 7nm→5nm
-node step itself: `flow/statppa.py --platforms opencell7 opencell5 <design>`.
+- The 5nm numeric definition lives in `scaling/scale_factors_5nm.json` (factors +
+  citations in `docs/SOURCES.md`, theory in `docs/METHODOLOGY.md`).
+- The library is re-derivable from the sky130 source:
+  ```bash
+  make fetch                                                     # fetch sky130 source .lib
+  python3 scaling/scale_lib.py --corner tt \
+      --in derived/sky130_libs/sky130_fd_sc_hd__tt_025C_1v80.lib \
+      --out derived/opencell5_tt_0p70v_25c.lib \
+      --factors scaling/scale_factors_5nm.json
+  python3 scaling/set_fanout_load.py --lib derived/opencell5_tt_0p70v_25c.lib --value 1.0
+  ```
+- The physical deck (LEF/tcl) is a committed artifact; `scaling/gridlock_lef.py`
+  documents the site/DB-grid-locked scaling method used to produce it.

@@ -8,13 +8,13 @@
 # opencell-5 open-source carve-out depends on.
 #
 # Mounts are ADDITIVE over the image so the image's baked-in reference RTL
-# (e.g. designs/src/gcd/gcd.v) stays intact while our opencell7 platform and
+# (e.g. designs/src/gcd/gcd.v) stays intact while our opencell5 platform and
 # design configs are layered on top.
 #
 # Usage:
 #   flow/run_orfs.sh <platform> <design_nickname> [extra make args/targets...]
-#   flow/run_orfs.sh opencell7 gcd                 # full flow to final STA
-#   flow/run_orfs.sh opencell7 gcd finish          # stop at a named target
+#   flow/run_orfs.sh opencell5 gcd                 # full flow to final STA
+#   flow/run_orfs.sh opencell5 gcd finish          # stop at a named target
 #
 # Env:
 #   ORFS_IMAGE   container image            (default: openroad/orfs:latest)
@@ -50,7 +50,7 @@ docker rm -f "$NAME" >/dev/null 2>&1 || true
 
 # --- assemble additive bind mounts ---
 M=()
-# Platform: opencell7 is NOT in the image (additive overlay); built-ins like
+# Platform: opencell5 is NOT in the image (additive overlay); built-ins like
 # asap7/nangate45 already exist. Only overlay a host platform that is REAL
 # (has a config.mk) — guarding against a stray/empty host platform dir
 # shadowing the image's complete one (e.g. an empty platforms/asap7/).

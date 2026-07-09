@@ -22,7 +22,7 @@ gate CI / a migration on it.
 Usage:
   flow/sweep.py --designs d8 --reference results/reference_dsweep.csv
   flow/sweep.py --designs picorv32 --repeat 2
-  flow/sweep.py --designs d8 d16 d32 d48 --platforms opencell7 asap7
+  flow/sweep.py --designs d8 d16 d32 d48 --platforms opencell5 asap7
 """
 from __future__ import annotations
 import argparse, csv, json, sys, time
@@ -68,13 +68,13 @@ def write_csv(rows: list[dict], path: Path) -> None:
 
 
 def summarize(rows: list[dict]) -> str:
-    """Cross-platform fmax gap table (oc7 vs asap7) over run-1 results."""
+    """Cross-platform fmax gap table (oc5 vs asap7) over run-1 results."""
     by = {(r["platform"], r["design"]): r for r in rows if r.get("run", 1) == 1}
     designs = sorted({d for (_, d) in by})
-    out = ["| design | opencell7 (MHz) | asap7 (MHz) | gap vs asap7 |",
+    out = ["| design | opencell5 (MHz) | asap7 (MHz) | gap vs asap7 |",
            "|--------|-----------------|-------------|--------------|"]
     for d in designs:
-        oc = by.get(("opencell7", d))
+        oc = by.get(("opencell5", d))
         a7 = by.get(("asap7", d))
         oc_s = f"{oc['fmax_mhz']}" if oc and oc["status"] == "OK" else "—"
         a7_s = f"{a7['fmax_mhz']}" if a7 and a7["status"] == "OK" else "—"
@@ -89,7 +89,7 @@ def summarize(rows: list[dict]) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--designs", nargs="+", required=True)
-    ap.add_argument("--platforms", nargs="+", default=["opencell7", "asap7"])
+    ap.add_argument("--platforms", nargs="+", default=["opencell5", "asap7"])
     ap.add_argument("--tol", type=float, default=0.04, help="converge tol (frac)")
     ap.add_argument("--iters", type=int, default=4)
     ap.add_argument("--repeat", type=int, default=1,

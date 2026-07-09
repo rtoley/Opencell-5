@@ -27,7 +27,7 @@ import argparse, json, re, subprocess, sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
-DEFAULT_PLATFORMS = ["asap7", "opencell7"]   # [baseline, DUT]
+DEFAULT_PLATFORMS = ["asap7", "opencell5"]   # [baseline, DUT]
 
 
 def run_orfs(platform: str, design: str) -> int:
