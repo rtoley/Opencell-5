@@ -30,6 +30,9 @@ python3 scaling/set_fanout_load.py --lib derived/opencell5_tt_0p70v_25c.lib --va
 echo "== 2. copy opencell-7 deck -> opencell-5 =="
 rm -rf "$DST"; cp -r "$SRC" "$DST"
 rm -f "$DST"/*.bak "$DST"/lef/*.bak "$DST"/lib/*.bak "$DST"/.scaled
+# Drop the GDS: the copied opencell-7-scale layout is WRONG for opencell-5 and is
+# never read at the post-CTS statistical endpoint (GDS is only for final routing).
+rm -rf "$DST/gds"
 cp derived/opencell5_tt_0p70v_25c.lib "$DST/lib/sky130_fd_sc_hd__tt_025C_1v80.lib"
 
 echo "== 3. grid-locked LEF (SITE 0.0460x0.2720, all cells integer sites on 0.0005 DB grid) =="
