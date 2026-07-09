@@ -24,8 +24,8 @@ OpenROAD to a **post-CTS, router-free statistical endpoint** (a real clock tree 
 RC-estimated timing). That endpoint is where the honest PPA lives; both this deck
 and its 7nm sibling reach it cleanly.
 
-The scale factors (one node tighter than the 7nm sibling; see
-`scaling/scale_factors_5nm.json`, citations in `docs/SOURCES.md`):
+The 5nm-class scale factors (see `scaling/scale_factors_5nm.json`, citations in
+`docs/SOURCES.md`):
 
 | quantity | factor vs sky130 | direction |
 |---|---|---|
@@ -36,18 +36,6 @@ The scale factors (one node tighter than the 7nm sibling; see
 | leakage / cell | ×25 | higher |
 | input cap | ÷5 | lower |
 | setup / hold | ÷12 (then ×1.5 derate) | tighter |
-
-## The two decks
-
-| deck | node feel | area vs sky130 | ships |
-|---|---|---|---|
-| **opencell5** | 5nm-class | ÷100 | committed — turnkey |
-| **opencell7** | 7nm-class | ÷56 | committed — the 7nm sibling / build base |
-
-opencell5 is built *from* opencell7 (one node step), so it inherits all of the
-7nm deck's accumulated fixes. To study the node step itself:
-`flow/statppa.py --platforms opencell7 opencell5 <design>` — expect ~1.7× smaller
-area and ~1.1× higher fmax (on cleanly-measured, tight-clock designs).
 
 ## What this is NOT
 
@@ -77,10 +65,8 @@ area and ~1.1× higher fmax (on cleanly-measured, tight-clock designs).
 │   ├── build_opencell5.sh        rebuild the deck from source (maintainers)
 │   ├── scale_lib.py              sky130 .lib -> node-class .lib
 │   └── gridlock_lef.py           site/DB-grid-locked LEF scaler
-├── platforms/
-│   ├── opencell5/                the 5nm-class deck (committed)
-│   └── opencell7/                the 7nm-class deck (committed)
-└── designs/{opencell5,opencell7,src}/   design configs + RTL
+├── platforms/opencell5/          the 5nm-class deck (committed)
+└── designs/{opencell5,src}/      design configs + RTL
 ```
 
 ## License
