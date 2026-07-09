@@ -13,14 +13,14 @@ It also ASSERTS that high-fanout buffering actually happened (repair_design
 inserted buffers), so we can never again report an unbuffered, meaningless
 frequency. See memory: statistical-flow-not-signoff, no-handwave-buffer-fanout.
 
-The platform pair is configurable (`--platforms BASELINE DUT`), so any deck is a
-first-class citizen: asap7-vs-opencell7 (default), opencell7-vs-opencell5 (node
-step), etc. The signed gap is (DUT - BASELINE)/BASELINE.
+The platform pair is configurable (`--platforms BASELINE DUT`); the default is
+asap7 (a 7nm predictive reference bundled in the ORFS image) vs opencell5. The
+signed gap is (DUT - BASELINE)/BASELINE.
 
 Usage:
-  flow/statppa.py <design> [<design> ...]                       # default asap7 vs opencell7
-  flow/statppa.py --platforms opencell7 opencell5 <design> ...  # 7nm vs 5nm node step
-  flow/statppa.py --no-run <design>                             # parse existing builds only
+  flow/statppa.py <design> [<design> ...]                # default asap7 vs opencell5
+  flow/statppa.py --platforms asap7 opencell5 <design>   # explicit pair
+  flow/statppa.py --no-run <design>                      # parse existing builds only
 """
 from __future__ import annotations
 import argparse, json, re, subprocess, sys
@@ -133,7 +133,7 @@ def main() -> int:
     ap.add_argument("--platforms", nargs=2, metavar=("BASELINE", "DUT"),
                     default=DEFAULT_PLATFORMS,
                     help="two platforms to correlate; gap=(DUT-BASELINE)/BASELINE "
-                         "(default: asap7 opencell7)")
+                         "(default: asap7 opencell5)")
     ap.add_argument("--no-run", action="store_true",
                     help="parse existing build dirs only, don't launch ORFS")
     args = ap.parse_args()

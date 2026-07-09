@@ -6,9 +6,9 @@ and scale_lib.py passes it through unchanged. With fanout_load=0, STA
 accumulates ZERO load from a net's fanout, so the max_fanout / max_capacitance
 checks can never fire on a high-fanout net — repair_design inserts no buffers,
 the lone driver fights all its loads, and fmax is garbage (the long-standing
-"crap frequency" on opencell-7). asap7 ships default_fanout_load=1.
+"crap frequency" on opencell-5). asap7 ships default_fanout_load=1.
 
-This is the pipeline step that makes opencell-7 asap7-faithful: run it on the
+This is the pipeline step that makes opencell-5 asap7-faithful: run it on the
 scaled lib (after scale_lib.py) so repair_design actually buffers high-fanout
 nets. Validated: picorv32 358 buffers, aes 278 buffers, a 512-fanout read_en
 test closing 300 ps. See memory: no-handwave-buffer-fanout.

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """scale_lib.py — scale a sky130 Liberty file to a 7nm-class operating point.
 
-Reads scale_factors.json, applies factors to numeric fields, preserves
+Reads scale_factors_5nm.json, applies factors to numeric fields, preserves
 structure and attribution. Single file in, single file out.
 
 Usage:
-  scaling/scale_lib.py --in <sky130.lib> --out <opencell7.lib> \\
-      [--factors scaling/scale_factors.json]
+  scaling/scale_lib.py --in <sky130.lib> --out <opencell5.lib> \\
+      [--factors scaling/scale_factors_5nm.json]
 
 Approach:
   1. Tokenize the Liberty file.
@@ -185,7 +185,7 @@ class Scaler:
         self.factors = cfg["factors"]
         if corner_name not in cfg.get("corners", {}):
             raise ValueError(
-                f"corner {corner_name!r} not in scale_factors.json corners; "
+                f"corner {corner_name!r} not in scale_factors_5nm.json corners; "
                 f"available: {list(cfg.get('corners', {}).keys())}"
             )
         self.corner_name = corner_name
@@ -391,7 +391,7 @@ def build_header(src_path, factors_cfg, factors_path, corner):
     return (
         "/*\n"
         " * ============================================================\n"
-        " * OpenCell-7 — derived 7nm-class Liberty file\n"
+        " * OpenCell-5 — derived 5nm-class Liberty file\n"
         " * ============================================================\n"
         f" *   Generated:        {today}\n"
         f" *   Source library:   {os.path.basename(src_path)}\n"
@@ -407,7 +407,7 @@ def build_header(src_path, factors_cfg, factors_path, corner):
         " * consistent with published 7nm scaling but is NOT foundry-correlated\n"
         " * and NOT silicon-validated at 7nm. Do not use for tape-out.\n"
         " *\n"
-        " * Scaling factors applied (from scale_factors.json):\n"
+        " * Scaling factors applied (from scale_factors_5nm.json):\n"
         + "\n".join(
             f" *   {k:20s}  {v.get('operation','?'):8s} {v.get('value','?')}"
             for k, v in factors_cfg["factors"].items()
@@ -463,12 +463,12 @@ def main():
     ap.add_argument(
         "--corner",
         default="tt",
-        help="corner key from scale_factors.json corners {tt, ss, ...}; default tt",
+        help="corner key from scale_factors_5nm.json corners {tt, ss, ...}; default tt",
     )
     ap.add_argument(
         "--factors",
-        default=str(Path(__file__).parent / "scale_factors.json"),
-        help="path to scale_factors.json",
+        default=str(Path(__file__).parent / "scale_factors_5nm.json"),
+        help="path to scale_factors_5nm.json",
     )
     args = ap.parse_args()
 

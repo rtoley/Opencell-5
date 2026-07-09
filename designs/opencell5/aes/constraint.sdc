@@ -2,9 +2,9 @@ current_design aes_cipher_top
 
 set clk_name clk
 set clk_port_name clk
-# Mirrors asap7 aes constraint (clk_period 380 ps). opencell-7 scaled timing
+# Mirrors asap7 aes constraint (clk_period 380 ps). opencell-5 scaled timing
 # operates on the same time-unit (ns in lib), so 0.38 ns is the apples-to-apples
-# target. SDC unit is platform-default (ns for opencell-7).
+# target. SDC unit is platform-default (ns for opencell-5).
 set clk_period 0.38
 set clk_io_pct 0.2
 

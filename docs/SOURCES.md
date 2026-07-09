@@ -1,4 +1,4 @@
-# OpenCell-7 Sources
+# OpenCell-5 Sources
 
 Citation roster for every scaling factor in `scaling/scale_factors.json` and
 every claim in `docs/METHODOLOGY.md`. Each factor must have at least one

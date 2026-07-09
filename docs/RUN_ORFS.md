@@ -12,7 +12,7 @@ opencell-5 open-source carve-out depends on.
 flow/run_orfs.sh <platform> <design_nickname> [extra make args/targets]
 
 flow/run_orfs.sh asap7     gcd          # full flow to final STA
-flow/run_orfs.sh opencell7 gcd          # opencell-7 platform
+flow/run_orfs.sh opencell5 gcd          # opencell-5 platform
 flow/run_orfs.sh asap7     picorv32 finish   # stop at a named make target
 ```
 
@@ -25,7 +25,7 @@ reference RTL (e.g. `designs/src/gcd`). The launcher overlays **only** what we
 add, so it never hides the image's built-ins:
 
 - `platforms/<platform>` — mounted **only if it has a `config.mk`** (so the
-  `opencell7` platform overlays, and a stray/empty `platforms/asap7/` can't
+  `opencell5` platform overlays, and a stray/empty `platforms/asap7/` can't
   shadow the image's complete one).
 - `designs/<platform>/<design>` — mounted per-design (not the whole platform
   dir); falls through to the image's built-in design if we don't ship one.
@@ -71,5 +71,5 @@ add, so it never hides the image's built-ins:
 | gcd | 2540 MHz | −83.66 ps |
 | picorv32 | 1608 MHz | +378.11 ps |
 
-opencell-7 currently reaches global route then stops at **DRT-0073**
+opencell-5 currently reaches global route then stops at **DRT-0073**
 (scaled-PDK pin-access residual) — the open platform task.

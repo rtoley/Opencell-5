@@ -6,7 +6,7 @@ is **not** sign-off — the flow stops at a post-CTS, router-free statistical
 endpoint (synth → floorplan → place → CTS → RC-estimated timing).
 
 The opencell-5 deck ships **committed and ready to run**. As a user you never
-touch sky130 or opencell7 — those are the build-time provenance (see the
+touch sky130 — that is the build-time provenance (see the
 maintainer appendix at the very bottom, which you can ignore).
 
 ---
@@ -45,7 +45,7 @@ involved — just opencell-5.
 ## 3. (Optional) Compare against a 7nm reference
 
 If you want a sanity reference, `asap7` — an open 7nm *predictive* PDK bundled in
-the ORFS image — is the neutral yardstick. Nothing from sky130/opencell7 needed:
+the ORFS image — is the neutral yardstick. Nothing from sky130 needed:
 
 ```bash
 flow/statppa.py --platforms asap7 opencell5 gcd

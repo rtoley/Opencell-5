@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Grid-locked LEF re-scaler: opencell7 -> opencell5.
+"""Grid-locked LEF re-scaler: opencell5 -> opencell5.
 
 The naive scale_lef.py divides every dim by linear and rounds to mfgrid
 INDEPENDENTLY, so the scaled SITE (0.046023) is off the 0.0005 DB grid; OpenROAD
@@ -7,7 +7,7 @@ quantizes SITE and cell widths separately and they stop aligning -> DPL-0033
 overlaps on cell-diverse designs. Fix: pin SITE to a clean DB-grid value and
 force every cell to an integer number of that SITE.
 
-opencell7 SITE = 0.0615 x 0.3632 (cells are integer x-sites).
+opencell5 SITE = 0.0615 x 0.3632 (cells are integer x-sites).
 opencell5 SITE = 0.0460 x 0.2720 (both multiples of 0.0005; ~/1.336 -> area /100).
 """
 import re, sys
@@ -19,7 +19,7 @@ RX, RY = SW_NEW/SW_OLD, SH_NEW/SH_OLD   # x,y linear ratios (~0.748)
 def snap(v, g=DB):
     return round(round(v/g)*g, 4)
 def sites(w):
-    return round(w/SW_OLD)   # integer site count from the clean oc7 width
+    return round(w/SW_OLD)   # integer site count from the clean oc5 width
 
 src, dst = sys.argv[1], sys.argv[2]
 is_tlef = "--tlef" in sys.argv

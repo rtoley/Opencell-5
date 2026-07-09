@@ -2,7 +2,7 @@ current_design gcd
 
 set clk_name core_clock
 set clk_port_name clk
-# opencell-7 cells ~9x faster than sky130; target 0.5 ns (2 GHz) — leaves
+# opencell-5 cells ~9x faster than sky130; target 0.5 ns (2 GHz) — leaves
 # headroom over the synth-only fmax we measured (1.76 GHz at 30x, 2.18 GHz
 # at 40x).
 set clk_period 0.31

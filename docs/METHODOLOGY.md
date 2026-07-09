@@ -1,4 +1,4 @@
-# OpenCell-7 Methodology — Scaling-Tool Approach
+# OpenCell-5 Methodology — Statistical Scaling Approach
 
 **Version:** v0.3 — adds process derate + SS corner  
 **Status:** Draft.
@@ -45,7 +45,7 @@ single-point (not Vt-dependent, not drive-dependent) for this cut.
 
 Per-corner V/T substitutions (corners block of `scale_factors.json`):
 
-| Corner | Source (sky130) | Target (opencell7) | Intent |
+| Corner | Source (sky130) | Target (opencell5) | Intent |
 |---|---|---|---|
 | **TT** | tt_025C_1v80 (1.80 V, 25 °C) | tt_0p7v_25c (0.70 V, 25 °C) | Typical-case PPA estimation |
 | **SS** | ss_n40C_1v60 (1.60 V, −40 °C) | ss_0p65v_125c (0.65 V, 125 °C) | Setup-time STA / worst-case fmax |
@@ -121,7 +121,7 @@ For cut-1 we ship two corners. Both use the same factor set; only the source
 | Source sky130 .lib | `sky130_fd_sc_hd__tt_025C_1v80.lib` | `sky130_fd_sc_hd__ss_n40C_1v60.lib` |
 | Source V / T | 1.80 V / 25 °C | 1.60 V / **−40 °C** (sky130's slow corner) |
 | Target V / T | 0.70 V / 25 °C | 0.65 V / **125 °C** (7nm sign-off convention) |
-| Output .lib | `derived/opencell7_tt_0p7v_25c.lib` | `derived/opencell7_ss_0p65v_125c.lib` |
+| Output .lib | `derived/opencell5_tt_0p7v_25c.lib` | `derived/opencell5_ss_0p65v_125c.lib` |
 | Intended use | typical-case PPA reporting | setup-time STA, fmax sign-off |
 
 ### Why we relabel SS −40 °C → 125 °C
@@ -130,7 +130,7 @@ Sky130's slow corner is at −40 °C because for planar CMOS at this geometry,
 **low temperature** dominates the slow direction (threshold voltage gets larger
 faster than mobility improves). For 7nm FinFET, the slow corner is at
 **125 °C** — mobility degradation dominates over threshold improvement at
-high temperature on this generation. The OpenCell-7 SS lib uses the *sky130
+high temperature on this generation. The OpenCell-5 SS lib uses the *sky130
 slow-corner numerics* (slow-corner is slow-corner; the magnitudes scale
 correctly) but **relabels** the operating-condition fields to the 7nm
 sign-off convention.
@@ -154,7 +154,7 @@ This is a synthetic choice and is documented in caveat §4.7.
    scaled by the input-cap factor since loads are typically defined in units
    of input cap, which is dimensionally consistent.
 7. **SS corner V/T relabeling is synthetic.** The numerical magnitudes in
-   `opencell7_ss_0p65v_125c.lib` are scaled from sky130's ss_n40C_1v60
+   `opencell5_ss_0p65v_125c.lib` are scaled from sky130's ss_n40C_1v60
    characterization (a −40 °C slow-temp corner). We relabel the operating-
    condition fields to 0.65 V / 125 °C to align with the 7nm sign-off
    convention (hot-corner setup). The numbers are NOT a re-characterization
@@ -184,8 +184,8 @@ libraries**:
 
 | | Source | Output |
 |---|---|---|
-| TT pair | sky130 tt_025C_1v80 | opencell7 tt_0p7v_25c |
-| SS pair | sky130 ss_n40C_1v60 | opencell7 ss_0p65v_125c |
+| TT pair | sky130 tt_025C_1v80 | opencell5 tt_0p7v_25c |
+| SS pair | sky130 ss_n40C_1v60 | opencell5 ss_0p65v_125c |
 
 For each run it records:
 
@@ -265,7 +265,7 @@ codebase.
 ### 5.4 Synthesis-only flow ceiling
 
 **Absolute fmax numbers from this flow are bounded by the synthesis
-flow, not the library.** OpenCell-7 produces dimensionally-consistent
+flow, not the library.** OpenCell-5 produces dimensionally-consistent
 scaled numbers, but Yosys + ABC + OpenSTA without physical
 implementation cannot hit the absolute fmax that physically-aware
 flows reach.
@@ -358,18 +358,18 @@ ceiling, not a library ceiling.
 
 ### 5.6 Comparison framework usage
 
-OpenCell-7 numbers are **consistent synthesis-anchor measurements for
+OpenCell-5 numbers are **consistent synthesis-anchor measurements for
 comparing RTL implementations against each other under fixed flow
 assumptions**, not predictions of silicon fmax. Use them like this:
 
 **Valid use cases:**
 
-- "RTL variant A is 1.4× faster than variant B on the same OpenCell-7
+- "RTL variant A is 1.4× faster than variant B on the same OpenCell-5
   flow." → Defensible. Both variants saw the same abc decisions, same
   retime policy, same NLDM tables. The ratio reflects what the RTL
   changed.
 - "Adding two pipeline stages improved fmax 2.3×." → Defensible.
-- "This optimization saved 18% area on OpenCell-7." → Defensible. Area
+- "This optimization saved 18% area on OpenCell-5." → Defensible. Area
   scaling is purely numerical (`area / 30`), so cross-RTL area deltas
   carry through 1:1.
 - "Scaled lib is 8.93× faster than sky130 on this RTL." → Approximately
@@ -382,14 +382,14 @@ assumptions**, not predictions of silicon fmax. Use them like this:
   synthesis-anchor numbers, not silicon predictions. Apply the
   empirically-observed OpenROAD lift (~2-3×) and call out the cut-3
   caveat.
-- "OpenCell-7 says PicoRV32 closes at 800 MHz." → No. Quote the cut-3
+- "OpenCell-5 says PicoRV32 closes at 800 MHz." → No. Quote the cut-3
   uplifted number with flow context.
-- "AES on OpenCell-7 SS hits 1.5 GHz." → No. That's a sign-off-flow
+- "AES on OpenCell-5 SS hits 1.5 GHz." → No. That's a sign-off-flow
   prediction with parasitic-aware retiming and repair, neither of
   which this flow does.
 
 **Comparison protocol:** when reporting an RTL improvement using
-OpenCell-7, always include (a) the corner (TT or SS), (b) the design
+OpenCell-5, always include (a) the corner (TT or SS), (b) the design
 context (which RTL variant is the baseline), (c) the flow
 configuration (`flow/synth.tcl` + abc -D target), and (d) a note
 that these are synthesis-anchor numbers, not silicon predictions.

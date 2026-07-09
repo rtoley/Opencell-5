@@ -2,7 +2,7 @@ current_design picorv32
 
 set clk_name clk
 set clk_port_name clk
-# Mirror opencell-7 picorv32 SDC for apples-to-apples. asap7 SDC unit is ps.
+# Mirror opencell-5 picorv32 SDC for apples-to-apples. asap7 SDC unit is ps.
 # 1000 ps = 1 ns = 1 GHz — canonical open-source picorv32 ASIC target.
 set clk_period 1000
 set clk_io_pct 0.2

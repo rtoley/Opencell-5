@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# OpenCell-7 — end-to-end verification.
+# OpenCell-5 — end-to-end verification.
 #
 # Steps:
 #   1. Fetch sky130 if missing.
@@ -11,7 +11,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 echo "===================================================="
-echo "OpenCell-7 — scaling-tool verification"
+echo "OpenCell-5 — scaling-tool verification"
 echo "===================================================="
 
 # Tool checks
@@ -34,7 +34,7 @@ else
 fi
 
 echo ""
-echo "==> Step 2: scale -> derived/opencell7_tt_0p7v_25c.lib"
+echo "==> Step 2: scale -> derived/opencell5_tt_0p7v_25c.lib"
 make scale
 
 echo ""
